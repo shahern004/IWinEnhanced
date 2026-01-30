@@ -185,20 +185,10 @@ end
 function IWin:Cleave()
 	if IWin:IsSpellLearnt("Cleave") then
 		if IWin:IsRageAvailable("Cleave")
-			or (
-					UnitMana("player") > 60
-					and (
-							not IWin:IsSpellLearnt("Whirlwind")
-							or IWin:GetCooldownRemaining("Whirlwind") > 0
-						)
-					and (
-							not IWin:IsSpellLearnt("Sweeping Strikes")
-							or IWin:GetCooldownRemaining("Sweeping Strikes") > 0
-						)
-				) then
-					IWin_CombatVar["swingAttackQueued"] = true
-					IWin_CombatVar["startAttackThrottle"] = GetTime() + 0.2
-					CastSpellByName("Cleave")
+			or UnitMana("player") > 80 then
+				IWin_CombatVar["swingAttackQueued"] = true
+				IWin_CombatVar["startAttackThrottle"] = GetTime() + 0.2
+				CastSpellByName("Cleave")
 		else
 			--SpellStopCasting()
 		end
@@ -281,6 +271,29 @@ function IWin:DPSStanceDefault()
 					CastSpellByName("Battle Stance")
 				end
 		end
+	end
+end
+
+-- Casts Death Wish if learned, off CD, not already active, rage available,
+-- in combat, and no slam queued. Used by both /iburst (manual) and DeathWishAuto().
+function IWin:DeathWish()
+	if IWin:IsSpellLearnt("Death Wish")
+		and IWin_CombatVar["queueGCD"]
+		and not IWin:IsOnCooldown("Death Wish")
+		and not IWin:IsBuffActive("player", "Death Wish")
+		and IWin:IsRageCostAvailable("Death Wish")
+		and UnitAffectingCombat("player")
+		and not IWin_CombatVar["slamQueued"] then
+			IWin_CombatVar["queueGCD"] = false
+			CastSpellByName("Death Wish")
+	end
+end
+
+-- Auto-burst wrapper for /idps and /icleave rotations.
+-- Gated by IsDeathWishBurstAvailable() (rage, TTK, boss timing).
+function IWin:DeathWishAuto()
+	if IWin:IsDeathWishBurstAvailable() then
+		IWin:DeathWish()
 	end
 end
 
@@ -797,6 +810,28 @@ function IWin:Rend()
 			CastSpellByName("Rend")
 	end
 end
+
+-- Manual-only cast via /iburst. Swaps from Battle to Berserker Stance if needed,
+-- then casts Recklessness. Not used in auto-burst rotations.
+function IWin:Recklessness()
+	if IWin:IsSpellLearnt("Recklessness")
+		and IWin_CombatVar["queueGCD"]
+		and not IWin:IsOnCooldown("Recklessness")
+		and not IWin:IsBuffActive("player", "Recklessness")
+		and UnitAffectingCombat("player")
+		and not IWin_CombatVar["slamQueued"] then
+			if not IWin:IsStanceActive("Berserker Stance")
+				and IWin:IsStanceActive("Battle Stance") then
+					IWin_CombatVar["queueGCD"] = false
+					CastSpellByName("Berserker Stance")
+			end
+			if IWin:IsStanceActive("Berserker Stance") then
+				IWin_CombatVar["queueGCD"] = false
+				CastSpellByName("Recklessness")
+			end
+	end
+end
+
 
 function IWin:Revenge()
 	if IWin:IsSpellLearnt("Revenge")

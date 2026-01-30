@@ -112,3 +112,32 @@ The addon relies on SuperWoW extensions CleveRoids library functions, and UnitXP
 ### Completed: Cleave never casts in /icleave rotation
 **Root cause**: Rage reservation stacking. Cleave is evaluated last in the rotation (`warrior/rotation.lua:101`). By that point, all `SetReservedRage()` calls above it have accumulated into `reservedRage`. The `IsRageAvailable("Cleave")` check in `core/condition.lua:280-287` computes: `rageRequired = 20 (Cleave cost) + reservedRage + 20 (next-melee penalty at line 283)`. With typical reservations totaling ~120+ rage, effective cost exceeds 100 max. The fallback `UnitMana("player") > 80` was also rarely met mid-combat.
 **Fix applied**: Replaced Cleave's weak fallback in `warrior/action.lua:185-196` with a smart fallback mirroring HeroicStrike's pattern (`warrior/action.lua:425-442`). Cleave now casts when rage > 60 AND both Whirlwind and Sweeping Strikes are on cooldown (or unlearned), bypassing the reservation system safely. Fixes both `/icleave` and `/ihodor` rotations.
+
+### Completed: Death Wish & Recklessness burst cooldown support
+
+**Scope**: Added Death Wish (Fury talent, 10 rage, any stance, 3 min CD) and Recklessness (baseline, 0 rage, Berserker Stance, 30 min CD) with two activation methods.
+
+**Implementation**:
+
+- `/iburst` slash command for manual burst. Recklessness first (stance-swaps from Battle to Berserker), Death Wish second. One CD per press via `queueGCD`.
+- Auto-burst in `/idps` and `/icleave` rotations via `DeathWishAuto()`, placed after `DPSStanceDefault()` before the main damage priority list.
+- TTK-gated via `GetTimeToKill()` wrapper calling `TimeToKill.GetTTK()` directly (not the raid-only `GetTimeToDie()` wrapper).
+- Not included in `/itank` or `/ihodor` (both increase damage taken).
+- `/iwin burst on|off` setting (default: `on`) controls auto-burst. `/iburst` always works.
+
+**Files modified**: `warrior/data.lua` (rage costs), `warrior/condition.lua` (`GetTimeToKill`, `IsDeathWishBurstAvailable`), `warrior/action.lua` (`DeathWish`, `DeathWishAuto`, `Recklessness`), `warrior/event.lua` (burst setting init), `warrior/setup.lua` (`/iwin burst` subcommand), `warrior/rotation.lua` (`/iburst` command + auto-burst in `/idps` and `/icleave`).
+
+### Completed: Improved Death Wish auto-burst conditions & removed Recklessness auto-burst
+
+**Scope**: Redesigned `IsDeathWishBurstAvailable()` based on fury warrior cooldown best practices. Removed Recklessness from auto-burst (manual `/iburst` only).
+
+**Implementation**:
+
+- **Rage threshold gate**: Requires >= 50 rage before auto-burst fires. Prevents wasting Death Wish when unable to follow up with damage abilities.
+- **TTK stabilization gate**: Requires `GetTimeToKill()` to return non-nil on all paths. Blocks early-combat firing when TimeToKill hasn't gathered enough samples, even if rage is already high.
+- **Boss TTK alignment**: Fire when TTK <= 35s (buff covers kill including execute) or TTK >= 60s (long fight, use on CD). Hold zone at 35-60s TTK waits for execute phase.
+- **Boss execute trigger**: Fire immediately when boss target HP <= 20% (execute phase is highest damage window).
+- **Elite/normal mobs**: Fire when TTK >= 30s. No special shortcuts for elites.
+- **Recklessness removed from auto-burst**: Deleted `RecklessnessAuto()` and `IsRecklessnessBurstAvailable()`. Recklessness is managed manually via `/iburst` only.
+
+**Files modified**: `warrior/condition.lua` (rewrote `IsDeathWishBurstAvailable`, deleted `IsRecklessnessBurstAvailable`), `warrior/action.lua` (deleted `RecklessnessAuto`), `warrior/rotation.lua` (removed `RecklessnessAuto()` calls from `/idps` and `/icleave`).
