@@ -62,5 +62,7 @@ IWin:SetScript("OnEvent", function()
 		IWin:SetBlacklistAOEDamage()
 		IWin:SetBlacklistKick()
 		IWin:SetWhitelistCharge()
+		IWin:SetBoss()
+		IWin:SetWhitelistBoss()
 	end
 end)

@@ -559,7 +559,7 @@ function IWin:Intervene()
 				or not IWin:IsOnCooldown("Bloodrage")
 			)
 		and not IWin_CombatVar["slamQueued"] then
-			if IWin:IsStanceActive("Defensive Stance") then
+			if not IWin:IsStanceActive("Defensive Stance") then
 				CastSpellByName("Defensive Stance")
 			end
 			if not IWin:IsRageCostAvailable("Intervene") then
@@ -629,7 +629,7 @@ function IWin:MasterStrikeWindfury()
 		and IWin:IsRageAvailable("Master Strike")
 		and IWin:IsBuffActive("player", "Windfury Totem") then
 			IWin_CombatVar["queueGCD"] = false
-			CastSpellByName("Hamstring")
+			CastSpellByName("Master Strike")
 	end
 end
 

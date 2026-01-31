@@ -446,8 +446,8 @@ function IWin:GetBlacklistAOEDebuff()
 		return true
 	end
 	local name = UnitName("target")
-	for unit in IWin_BlacklistAOEDebuff do
-		if IWin_BlacklistAOEDebuff[unit] == name then
+	for _, unit in ipairs(IWin_BlacklistAOEDebuff) do
+		if unit == name then
 			return true
 		end
 	end
@@ -467,8 +467,8 @@ function IWin:GetBlacklistAOEDamage()
 		return true
 	end
 	local name = UnitName("target")
-	for unit in IWin_BlacklistAOEDamage do
-		if IWin_BlacklistAOEDamage[unit] == name then
+	for _, unit in ipairs(IWin_BlacklistAOEDamage) do
+		if unit == name then
 			return true
 		end
 	end
@@ -488,8 +488,8 @@ function IWin:GetBlacklistKick()
 		return true
 	end
 	local name = UnitName("target")
-	for unit in IWin_BlacklistKick do
-		if IWin_BlacklistKick[unit] == name then
+	for _, unit in ipairs(IWin_BlacklistKick) do
+		if unit == name then
 			return true
 		end
 	end
@@ -509,8 +509,8 @@ function IWin:GetBlacklistFear()
 		return true
 	end
 	local name = UnitName("target")
-	for unit in IWin_BlacklistFear do
-		if IWin_BlacklistFear[unit] == name then
+	for _, unit in ipairs(IWin_BlacklistFear) do
+		if unit == name then
 			return true
 		end
 	end
@@ -530,8 +530,8 @@ function IWin:GetWhitelistCharge()
 		return true
 	end
 	local name = UnitName("target")
-	for unit in IWin_WhitelistCharge do
-		if IWin_WhitelistCharge[unit] == name then
+	for _, unit in ipairs(IWin_WhitelistCharge) do
+		if unit == name then
 			return true
 		end
 	end
@@ -554,8 +554,8 @@ function IWin:GetWhitelistBoss()
 		return true
 	end
 	local name = UnitName("target")
-	for unit in IWin_WhitelistBoss do
-		if IWin_WhitelistBoss[unit] == name then
+	for _, unit in ipairs(IWin_WhitelistBoss) do
+		if unit == name then
 			return true
 		end
 	end
