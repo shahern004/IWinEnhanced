@@ -1255,3 +1255,29 @@ function IWin:WhirlwindAOE(queueTime)
 			end
 	end
 end
+
+-- Furyprot ####################################################################################################################################
+
+function IWin:HeroicStrikeFuryprot()
+	if IWin:IsSpellLearnt("Heroic Strike")
+		and UnitMana("player") >= 50 then
+			IWin_CombatVar["swingAttackQueued"] = true
+			IWin_CombatVar["startAttackThrottle"] = GetTime() + 0.2
+			CastSpellByName("Heroic Strike")
+	end
+end
+
+function IWin:CleaveFuryprot()
+	if IWin:IsSpellLearnt("Cleave")
+		and UnitMana("player") >= 40 then
+			IWin_CombatVar["swingAttackQueued"] = true
+			IWin_CombatVar["startAttackThrottle"] = GetTime() + 0.2
+			CastSpellByName("Cleave")
+	end
+end
+
+function IWin:BloodthirstFuryprotAOE()
+	if UnitMana("player") >= 60 then
+		IWin:Bloodthirst(IWin_Settings["GCD"])
+	end
+end

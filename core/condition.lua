@@ -380,7 +380,7 @@ end
 
 -- Target #######################################################################################################################################
 function IWin:IsTanking()
-	return UnitIsUnit("targettarget", "player")
+	return not UnitExists("targettarget") or UnitIsUnit("targettarget", "player")
 end
 
 function IWin:IsBehind()
