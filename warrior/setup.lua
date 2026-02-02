@@ -93,10 +93,13 @@ function SlashCmdList.IWINWARRIOR(command)
 			return
 		end
 	elseif arguments[1] == "laststand" then
-		if arguments[2] ~= nil
-			and (tonumber(arguments[2]) == nil or tonumber(arguments[2]) < 0 or tonumber(arguments[2]) > 100) then
-				DEFAULT_CHAT_FRAME:AddMessage("|cff0066ff Unknown parameter. Possible values: 0-100 (percent HP).|r")
-				return
+		if arguments[2] == nil then
+			DEFAULT_CHAT_FRAME:AddMessage("|cff0066ff Last Stand threshold: |r" .. tostring(IWin_Settings["laststand"]) .. "%")
+			return
+		end
+		if tonumber(arguments[2]) == nil or tonumber(arguments[2]) < 0 or tonumber(arguments[2]) > 100 then
+			DEFAULT_CHAT_FRAME:AddMessage("|cff0066ff Unknown parameter. Possible values: 0-100 (percent HP).|r")
+			return
 		end
 	end
 
