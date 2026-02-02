@@ -203,7 +203,7 @@ end
 function IWin:Cleave()
 	if IWin:IsSpellLearnt("Cleave") then
 		if IWin:IsRageAvailable("Cleave")
-			or UnitMana("player") > 80 then
+			or UnitMana("player") > 70 then
 				IWin_CombatVar["swingAttackQueued"] = true
 				IWin_CombatVar["startAttackThrottle"] = GetTime() + 0.2
 				CastSpellByName("Cleave")
