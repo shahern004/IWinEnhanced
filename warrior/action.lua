@@ -971,6 +971,26 @@ function IWin:SaveDualWieldWeapons()
 	end
 end
 
+function IWin:FindItemInBags(itemName)
+	for bag = 0, 4 do
+		for slot = 1, GetContainerNumSlots(bag) do
+			local link = GetContainerItemLink(bag, slot)
+			if link and strfind(link, itemName) then
+				return bag, slot
+			end
+		end
+	end
+end
+
+function IWin:EquipItemToSlot(itemName, equipSlot)
+	local bag, slot = IWin:FindItemInBags(itemName)
+	if bag then
+		PickupContainerItem(bag, slot)
+		PickupInventoryItem(equipSlot)
+		PickupContainerItem(bag, slot)
+	end
+end
+
 function IWin:EquipShield()
 	if IWin_Settings["shield"] == "" then
 		DEFAULT_CHAT_FRAME:AddMessage("|cff0066ff /idefend: No shield configured. Use /iwin shield <name>|r")
@@ -979,16 +999,16 @@ function IWin:EquipShield()
 	if not IWin:IsShieldEquipped() then
 		IWin:SaveDualWieldWeapons()
 		IWin_CombatVar["queueGCD"] = false
-		EquipItemByName(IWin_Settings["shield"])
+		IWin:EquipItemToSlot(IWin_Settings["shield"], 17)
 	end
 end
 
 function IWin:ReequipDualWield()
 	if IWin_Settings["savedMH"] ~= "" then
-		EquipItemByName(IWin_Settings["savedMH"], 16)
+		IWin:EquipItemToSlot(IWin_Settings["savedMH"], 16)
 	end
 	if IWin_Settings["savedOH"] ~= "" then
-		EquipItemByName(IWin_Settings["savedOH"], 17)
+		IWin:EquipItemToSlot(IWin_Settings["savedOH"], 17)
 	end
 	IWin_CombatVar["queueGCD"] = false
 end
