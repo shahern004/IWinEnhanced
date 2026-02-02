@@ -28,6 +28,10 @@ IWin:SetScript("OnEvent", function()
 		if IWin_Settings["dtBerserker"] == nil then IWin_Settings["dtBerserker"] = "off" end
 		if IWin_Settings["jousting"] == nil then IWin_Settings["jousting"] = "off" end
 		if IWin_Settings["burst"] == nil then IWin_Settings["burst"] = "on" end
+		if IWin_Settings["shield"] == nil then IWin_Settings["shield"] = "" end
+		if IWin_Settings["laststand"] == nil then IWin_Settings["laststand"] = 50 end
+		if IWin_Settings["savedMH"] == nil then IWin_Settings["savedMH"] = "" end
+		if IWin_Settings["savedOH"] == nil then IWin_Settings["savedOH"] = "" end
 		IWin.hasSuperwow = SetAutoloot and true or false
 		IWin.hasUnitXP = pcall(UnitXP, "nop", "nop") and true or false
 	elseif event == "ADDON_LOADED" and (arg1 == "SuperCleveRoidMacros" or arg1 == "IWinEnhanced") then

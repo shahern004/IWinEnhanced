@@ -87,6 +87,17 @@ function SlashCmdList.IWINWARRIOR(command)
 				DEFAULT_CHAT_FRAME:AddMessage("|cff0066ff Unkown parameter. Possible values: on, off.|r")
 				return
 		end
+	elseif arguments[1] == "shield" then
+		if arguments[2] == nil then
+			DEFAULT_CHAT_FRAME:AddMessage("|cff0066ff Unknown parameter. Provide a shield name. Example: /iwin shield Draconian Deflector|r")
+			return
+		end
+	elseif arguments[1] == "laststand" then
+		if arguments[2] ~= nil
+			and (tonumber(arguments[2]) == nil or tonumber(arguments[2]) < 0 or tonumber(arguments[2]) > 100) then
+				DEFAULT_CHAT_FRAME:AddMessage("|cff0066ff Unknown parameter. Possible values: 0-100 (percent HP).|r")
+				return
+		end
 	end
 
     if arguments[1] == "charge" then
@@ -122,6 +133,16 @@ function SlashCmdList.IWINWARRIOR(command)
 	elseif arguments[1] == "burst" then
 	    IWin_Settings["burst"] = arguments[2]
 	    DEFAULT_CHAT_FRAME:AddMessage("|cff0066ff Auto-burst (Death Wish): |r" .. IWin_Settings["burst"])
+	elseif arguments[1] == "shield" then
+		local shieldName = arguments[2]
+		for i = 3, table.getn(arguments) do
+			shieldName = shieldName .. " " .. arguments[i]
+		end
+		IWin_Settings["shield"] = shieldName
+		DEFAULT_CHAT_FRAME:AddMessage("|cff0066ff Shield: |r" .. IWin_Settings["shield"])
+	elseif arguments[1] == "laststand" then
+		IWin_Settings["laststand"] = tonumber(arguments[2])
+		DEFAULT_CHAT_FRAME:AddMessage("|cff0066ff Last Stand threshold: |r" .. tostring(IWin_Settings["laststand"]) .. "%")
 	else
 		DEFAULT_CHAT_FRAME:AddMessage("|cff0066ff Usage:|r")
 		DEFAULT_CHAT_FRAME:AddMessage("|cff0066ff /iwin:|r Current setup")
@@ -136,5 +157,7 @@ function SlashCmdList.IWINWARRIOR(command)
 		DEFAULT_CHAT_FRAME:AddMessage("|cff0066ff /iwin ragegain [|r" .. tostring(IWin_Settings["ragePerSecondPrediction"]) .. "|cff0066ff]:|r Setup to anticipate rage gain per second. Required rage will be saved gradually before the spells are used. 10 is the default parameter. Increase the value if rage is wasted.")
 		DEFAULT_CHAT_FRAME:AddMessage("|cff0066ff /iwin jousting [|r" .. IWin_Settings["jousting"] .. "|cff0066ff]:|r Setup for Jousting solo DPS")
 		DEFAULT_CHAT_FRAME:AddMessage("|cff0066ff /iwin burst [|r" .. IWin_Settings["burst"] .. "|cff0066ff]:|r Setup for auto-burst cooldown (Death Wish) in /idps and /icleave")
+		DEFAULT_CHAT_FRAME:AddMessage("|cff0066ff /iwin shield [|r" .. IWin_Settings["shield"] .. "|cff0066ff]:|r Shield name for /idefend")
+		DEFAULT_CHAT_FRAME:AddMessage("|cff0066ff /iwin laststand [|r" .. tostring(IWin_Settings["laststand"]) .. "|cff0066ff]:|r HP% threshold for Last Stand in /idefend")
     end
 end
