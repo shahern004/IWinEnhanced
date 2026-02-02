@@ -1,5 +1,23 @@
 if UnitClass("player") ~= "Warrior" then return end
 
+-- Local aliases for hot-path globals (Phase 2 optimization)
+local GetTime = GetTime
+local UnitMana = UnitMana
+local UnitHealth = UnitHealth
+local UnitHealthMax = UnitHealthMax
+local UnitExists = UnitExists
+local UnitAffectingCombat = UnitAffectingCombat
+local UnitIsFriend = UnitIsFriend
+local UnitIsUnit = UnitIsUnit
+local UnitInRaid = UnitInRaid
+local UnitIsPVP = UnitIsPVP
+local UnitAttackSpeed = UnitAttackSpeed
+local GetNumPartyMembers = GetNumPartyMembers
+local CastSpellByName = CastSpellByName
+local SpellStopCasting = SpellStopCasting
+local GetInventoryItemLink = GetInventoryItemLink
+local GetItemInfo = GetItemInfo
+
 function IWin:InitializeRotation()
 	IWin:InitializeRotationCore()
 	IWin_CombatVar["reservedRage"] = 0
@@ -800,9 +818,9 @@ function IWin:Rend()
 		and not UnitInRaid("player")
 		and not IWin:IsBuffActive("target","Rend")
 		and not (
-					UnitCreatureType("target") == "Undead"
-					or UnitCreatureType("target") == "Mechanical"
-					or UnitCreatureType("target") == "Elemental"
+					IWin:IsCreatureType("Undead")
+					or IWin:IsCreatureType("Mechanical")
+					or IWin:IsCreatureType("Elemental")
 				)
 		and not IWin:IsStanceActive("Berserker Stance")
 		and not IWin_CombatVar["slamQueued"] then
