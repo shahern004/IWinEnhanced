@@ -971,23 +971,16 @@ function IWin:SaveDualWieldWeapons()
 	end
 end
 
-function IWin:FindItemInBags(itemName)
-	for bag = 0, 4 do
-		for slot = 1, GetContainerNumSlots(bag) do
-			local link = GetContainerItemLink(bag, slot)
-			if link and strfind(link, itemName, 1, true) then
-				return bag, slot
+function IWin:RunSlashCmd(cmd, args)
+	for name, handler in pairs(SlashCmdList) do
+		local i = 1
+		while _G["SLASH_" .. name .. i] do
+			if _G["SLASH_" .. name .. i] == cmd then
+				handler(args or "")
+				return
 			end
+			i = i + 1
 		end
-	end
-end
-
-function IWin:EquipItemToSlot(itemName, equipSlot)
-	local bag, slot = IWin:FindItemInBags(itemName)
-	if bag then
-		PickupContainerItem(bag, slot)
-		PickupInventoryItem(equipSlot)
-		PickupContainerItem(bag, slot)
 	end
 end
 
@@ -999,16 +992,13 @@ function IWin:EquipShield()
 	if not IWin:IsShieldEquipped() then
 		IWin:SaveDualWieldWeapons()
 		IWin_CombatVar["queueGCD"] = false
-		IWin:EquipItemToSlot(IWin_Settings["shield"], 17)
+		IWin:RunSlashCmd("/equipoh", IWin_Settings["shield"])
 	end
 end
 
 function IWin:ReequipDualWield()
 	if IWin_Settings["savedOH"] ~= "" then
-		IWin:EquipItemToSlot(IWin_Settings["savedOH"], 17)
-	end
-	if IWin_Settings["savedMH"] ~= "" and not IWin:IsItemEquipped(16, IWin_Settings["savedMH"]) then
-		IWin:EquipItemToSlot(IWin_Settings["savedMH"], 16)
+		IWin:RunSlashCmd("/equipoh", IWin_Settings["savedOH"])
 	end
 	IWin_CombatVar["queueGCD"] = false
 end
