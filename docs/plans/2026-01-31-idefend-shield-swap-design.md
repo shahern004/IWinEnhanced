@@ -1,6 +1,6 @@
 # `/idefend` — Defensive Shield Swap Command
 
-**Status**: Design finalized, ready for implementation
+**Status**: Implemented — equip mechanism uses SuperCleveRoidMacros `/equipoh` via `RunSlashCmd`
 
 ## Feature Summary
 A 3-phase deterministic warrior command: equip a shield, cast defensive cooldowns, and swap back to dual-wield on demand. The shield itself is the primary defensive tool — cooldowns are optional. Swap-back is always manual (shift + keybind), never automatic.
@@ -25,7 +25,7 @@ Furyprot warriors benefit from sword-and-board as a defensive posture independen
 
 **Phase 1 — Shield not equipped:**
 1. Save current MH (slot 16) and OH (slot 17) weapon names to `IWin_Settings` (persists across reloads)
-2. Equip configured shield to slot 17
+2. Equip configured shield via SuperCleveRoidMacros `/equipoh`
 3. Swap to Defensive Stance if not already there
 4. May take 2 presses: press 1 = equip shield, press 2 = stance swap (follows existing 2-press pattern)
 
@@ -40,7 +40,7 @@ If all cooldowns are active or on CD, the press does nothing. Player uses `/ifur
 ### Shift + press (modifier):
 
 **Phase 3 — Swap back to DW:**
-Re-equip saved MH and OH weapons. Only fires when shift is held AND shield is currently equipped. Stance left as-is (Defensive is already the furyprot default).
+Re-equip saved OH weapon via SuperCleveRoidMacros `/equipoh`. Only fires when shift is held AND shield is currently equipped. MH is never changed (stays in slot 16 throughout). Stance left as-is (Defensive is already the furyprot default).
 
 ## State Detection
 State is implicit — no flags or combat variables needed:
@@ -56,21 +56,36 @@ Built into the existing GCD system:
 - Result: mashing the keybind naturally sequences through phases at ~1.5s intervals
 - Shift must be deliberately held — accidental swap-back requires holding a modifier while panic-pressing
 
-## Key API
-- `EquipItemByName(name, slot)` — NOT protected in 1.12, works in combat
-- `IsShiftKeyDown()` — Native WoW 1.12 API, returns true if shift is held
-- Slot 16 = Main Hand, Slot 17 = Off Hand/Shield
-- In-combat weapon swap triggers ~1.5s GCD
+## Equipment Swap Mechanism
+**Approach**: Call SuperCleveRoidMacros' `/equipoh` slash command handler from Lua via dynamic `SlashCmdList` lookup.
 
-## Files to Modify
+```lua
+function IWin:RunSlashCmd(cmd, args)
+    for name, handler in pairs(SlashCmdList) do
+        local i = 1
+        while _G["SLASH_" .. name .. i] do
+            if _G["SLASH_" .. name .. i] == cmd then
+                handler(args or "")
+                return
+            end
+            i = i + 1
+        end
+    end
+end
+```
+
+- Phase 1: `IWin:RunSlashCmd("/equipoh", IWin_Settings["shield"])`
+- Phase 3: `IWin:RunSlashCmd("/equipoh", IWin_Settings["savedOH"])`
+
+**Why this approach**: SuperCleveRoidMacros is a mandatory dependency that already provides proven, in-combat equip-by-name functionality via `/equip`, `/equipoh`, `/equipmh`. Calling its handler from Lua is reliable and avoids reimplementing bag search + cursor manipulation.
+
+**Failed approaches** (do NOT revisit):
+- `EquipItemByName(name, slot)` — Does not exist in WoW 1.12.1 API
+- `PickupContainerItem` + `PickupInventoryItem` cursor swap — Silently fails for weapon equipping in practice
+
+## Files Modified
 - `warrior/data.lua` — Rage costs for Shield Wall (0), Last Stand (0)
 - `warrior/event.lua` — Default settings: shield, laststand, savedMH, savedOH
-- `warrior/setup.lua` — New settings validation + assignment + help text
-- `warrior/action.lua` — New action functions: EquipShield, ReequipDualWield, ShieldWallDefend, LastStandDefend, DefensiveStanceDefend, SaveDualWieldWeapons
-- `warrior/rotation.lua` — New `/idefend` slash command
-
-## Files NOT Modified
-- `warrior/init.lua` — No new combat vars (state is implicit from equipment + modifier)
-- `warrior/condition.lua` — Existing `IsShieldEquipped()`, `IsBuffActive()`, `IsOnCooldown()` suffice
-- `warrior/event.lua` (events section) — No new event registrations
-- Existing rotations — `/ifuryprot`, `/ifuryprotaoe`, `/itank`, `/ihodor` unchanged
+- `warrior/setup.lua` — Settings validation + assignment + help text
+- `warrior/action.lua` — Action functions: RunSlashCmd, SaveDualWieldWeapons, EquipShield, ReequipDualWield, DefensiveStanceDefend, LastStandDefend, ShieldWallDefend, LastStandDefendNormal
+- `warrior/rotation.lua` — `/idefend` slash command
