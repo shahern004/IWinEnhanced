@@ -954,6 +954,85 @@ function IWin:ShieldSlam(queueTime)
 	end
 end
 
+function IWin:SaveDualWieldWeapons()
+	local mhLink = GetInventoryItemLink("player", 16)
+	local ohLink = GetInventoryItemLink("player", 17)
+	if mhLink then
+		local mhName = GetItemInfo(tonumber(IWin:GetItemID(mhLink)))
+		if mhName then
+			IWin_Settings["savedMH"] = mhName
+		end
+	end
+	if ohLink then
+		local ohName = GetItemInfo(tonumber(IWin:GetItemID(ohLink)))
+		if ohName then
+			IWin_Settings["savedOH"] = ohName
+		end
+	end
+end
+
+function IWin:EquipShield()
+	if IWin_Settings["shield"] == "" then
+		DEFAULT_CHAT_FRAME:AddMessage("|cff0066ff /idefend: No shield configured. Use /iwin shield <name>|r")
+		return
+	end
+	if not IWin:IsShieldEquipped() then
+		IWin:SaveDualWieldWeapons()
+		IWin_CombatVar["queueGCD"] = false
+		EquipItemByName(IWin_Settings["shield"])
+	end
+end
+
+function IWin:ReequipDualWield()
+	if IWin_Settings["savedMH"] ~= "" then
+		EquipItemByName(IWin_Settings["savedMH"], 16)
+	end
+	if IWin_Settings["savedOH"] ~= "" then
+		EquipItemByName(IWin_Settings["savedOH"], 17)
+	end
+	IWin_CombatVar["queueGCD"] = false
+end
+
+function IWin:DefensiveStanceDefend()
+	if IWin:IsSpellLearnt("Defensive Stance")
+		and not IWin:IsStanceActive("Defensive Stance") then
+			CastSpellByName("Defensive Stance")
+	end
+end
+
+function IWin:LastStandDefend()
+	if IWin:IsSpellLearnt("Last Stand")
+		and IWin_CombatVar["queueGCD"]
+		and not IWin:IsOnCooldown("Last Stand")
+		and not IWin:IsBuffActive("player", "Last Stand")
+		and (UnitHealth("player") / UnitHealthMax("player") * 100) < IWin_Settings["laststand"] then
+			IWin_CombatVar["queueGCD"] = false
+			CastSpellByName("Last Stand")
+	end
+end
+
+function IWin:ShieldWallDefend()
+	if IWin:IsSpellLearnt("Shield Wall")
+		and IWin_CombatVar["queueGCD"]
+		and not IWin:IsOnCooldown("Shield Wall")
+		and IWin:IsShieldEquipped()
+		and IWin:IsStanceActive("Defensive Stance")
+		and not IWin:IsBuffActive("player", "Shield Wall") then
+			IWin_CombatVar["queueGCD"] = false
+			CastSpellByName("Shield Wall")
+	end
+end
+
+function IWin:LastStandDefendNormal()
+	if IWin:IsSpellLearnt("Last Stand")
+		and IWin_CombatVar["queueGCD"]
+		and not IWin:IsOnCooldown("Last Stand")
+		and not IWin:IsBuffActive("player", "Last Stand") then
+			IWin_CombatVar["queueGCD"] = false
+			CastSpellByName("Last Stand")
+	end
+end
+
 function IWin:Shoot()
 	local rangedLink = GetInventoryItemLink("player", 18)
 	local itemSubType = nil
