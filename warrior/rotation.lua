@@ -302,3 +302,26 @@ function SlashCmdList.IFURYPROTAOEWARRIOR()
 	IWin:Perception()
 	IWin:StartAttack()
 end
+
+SLASH_IDEFENDWARRIOR1 = "/idefend"
+function SlashCmdList.IDEFENDWARRIOR()
+	IWin:InitializeRotation()
+	-- Phase 3: Shift held + shield equipped → swap back to DW
+	if IsShiftKeyDown() and IWin:IsShieldEquipped() then
+		IWin:ReequipDualWield()
+		return
+	end
+	-- Phase 1: Shield not equipped → equip shield + Defensive Stance
+	if not IWin:IsShieldEquipped() then
+		IWin:EquipShield()
+		IWin:DefensiveStanceDefend()
+		return
+	end
+	-- Phase 2: Shield equipped → cast defensive cooldowns (one per press)
+	-- Last Stand jumps to top priority when HP is low
+	IWin:LastStandDefend()
+	-- Shield Wall is default first cooldown
+	IWin:ShieldWallDefend()
+	-- Last Stand at normal priority (when HP is above threshold but CD is available)
+	IWin:LastStandDefendNormal()
+end
